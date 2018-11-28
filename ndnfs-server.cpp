@@ -15,12 +15,16 @@ const int ndnfs::seg_size_shift = 13;
 int ndnfs::user_id = 0;
 int ndnfs::group_id = 0;
 
-orders getOrder(char *order) {
+int new_socket;
+
+orders getOrder(string order) {
     orders o = DEFAULT;
-    if (strcmp(order, "quit") == 0)
+    if (strcmp(order.c_str(), "quit") == 0)
         o = QUIT;
-    else if (strcmp(order, "send") == 0)
+    else if (strcmp(order.c_str(), "send") == 0)
         o = SEND;
+    else if (strcmp(order.c_str(), "getattr") == 0)
+        o = GETATTR;
     return o;
 }
 
@@ -36,7 +40,7 @@ int main(int argc, char const *argv[]) {
     ndnfs::group_id = getgid();
     ndnfs::user_id = getuid();
 
-    int server_fd, new_socket, valread;
+    int server_fd, valread;
     sockaddr_in address;
     server_fd = init_socket(address, 3);
     int addrlen = sizeof(address);
@@ -49,21 +53,32 @@ int main(int argc, char const *argv[]) {
 
     char buffer[1024];
     const char *hello = "Hello from server";
-    valread = (int) read(new_socket, buffer, 1024);
-    printf("%s\n", buffer);
-    send(new_socket, hello, strlen(hello), 0);
-    printf("Hello message sent\n");
-//    while(true) {
-    valread = (int) read(new_socket, buffer, 1024);
-    vector<string> v;
-    SplitString(buffer, v, " ");
-    cout << v[0] << endl;
-//        orders order = getOrder(buffer);
-
-//        switch(order) {
-//            case QUIT:
-//                return 0;
-//            case GETATTR:
-//        }
-//    }
+//    valread = (int) read(new_socket, buffer, 1024);
+//    printf("%s\n", buffer);
+//    send(new_socket, hello, strlen(hello), 0);
+//    printf("Hello message sent\n");
+    while (true) {
+        memset(buffer, '\0', sizeof(buffer));
+        valread = (int) read(new_socket, buffer, 1024);
+        vector<string> v;
+        SplitString(buffer, v, " ");
+//    cout << v[0] << endl;
+        orders order = getOrder(v[0]);
+        switch (order) {
+            case QUIT:
+                return 0;
+            case GETATTR: {
+                attr_to_json(v);
+                break;
+            }
+            case SEND: {
+                valread = (int) read(new_socket, buffer, 1024);
+                FILE_LOG(LOG_DEBUG) << buffer << endl;
+                send(new_socket, hello, strlen(hello), 0);
+                break;
+            }
+            default:
+                break;
+        }
+    }
 }

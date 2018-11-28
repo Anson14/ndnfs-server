@@ -11,6 +11,6 @@
 #include "ndnfs-server.h"
 #include "filetype.h"
 
-int server_getattribute(char * name, int jsonfile);
+int server_getattribute(char * name, Json::Value &root);
 
 #endif //NDNFS_SERVER_FILEHANDLE_H

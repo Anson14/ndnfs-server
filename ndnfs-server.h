@@ -5,6 +5,7 @@
 #ifndef NDNFS_SERVER_NDNFS_SERVER_H
 #define NDNFS_SERVER_NDNFS_SERVER_H
 
+#include "bits/stdc++.h"
 #include "connect.h"
 #include "filehandle.h"
 #include "bits/stdc++.h"
@@ -29,7 +30,7 @@
 
 extern const char *db_name;
 extern sqlite3 *db;
-
+extern int new_socket;
 namespace ndnfs {
 //    extern ndn::Name certificateName;
 //    extern ndn::ptr_lib::shared_ptr<ndn::KeyChain> keyChain;
@@ -50,7 +51,7 @@ enum orders{
     QUIT, SEND, DEFAULT, GETATTR
 };
 
-orders getOrder(char *order);
+orders getOrder(std::string order);
 
 inline void SplitString(const std::string& s, std::vector<std::string>& v, const std::string& c)
 {

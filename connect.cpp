@@ -3,8 +3,9 @@
 //
 #include "connect.h"
 
-int init_socket(struct sockaddr_in &address, int backlog)
-{
+using namespace std;
+
+int init_socket(struct sockaddr_in &address, int backlog) {
     int server_fd;
     // sockaddr is decalred in <netinet/in.h>
     // this is a struct to indicate socket address
@@ -14,8 +15,7 @@ int init_socket(struct sockaddr_in &address, int backlog)
 
     // Creating socket file descriptor
     // Actualy, Socket is one type of special file
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
-    {
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("socket failed");
         exit(EXIT_FAILURE);
     }
@@ -33,19 +33,31 @@ int init_socket(struct sockaddr_in &address, int backlog)
     address.sin_port = htons(PORT);
 
     // Forcefully attaching socket to the port 8080
-    if (bind(server_fd, (struct sockaddr *)&address,
-             sizeof(address)) < 0)
-    {
+    if (bind(server_fd, (struct sockaddr *) &address,
+             sizeof(address)) < 0) {
         perror("bind failed");
         exit(EXIT_FAILURE);
     }
     // NOTE: argument backlog = 3, it defines the maximum
     // length to which the queue of pending connection
-    if (listen(server_fd, backlog) < 0)
-    {
+    if (listen(server_fd, backlog) < 0) {
         perror("listen");
         exit(EXIT_FAILURE);
     }
 
     return server_fd;
+}
+
+int attr_to_json(vector<string> v) {
+    Json::Value info;
+    Json::StyledWriter sw;
+    if (v.size() == 2) {
+        server_getattribute((char *) v[1].c_str(), info);
+        // Get attr sucess
+        string attr_json = sw.write(info);
+        send(new_socket, attr_json.c_str(), attr_json.size(), 0);
+    } else {
+        string error_json = sw.write(info);
+        send(new_socket, error_json.c_str(), error_json.length(), 0);
+    }
 }

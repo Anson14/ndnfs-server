@@ -4,16 +4,16 @@
 #include "filehandle.h"
 using namespace std;
 
-int server_getattribute(char * name, int jsonfile) {
-    Json::Value root;
-
-
+int server_getattribute(char * name, Json::Value &root) {
+    FILE_LOG(LOG_DEBUG)<< "server_getattribute: name="<< name<< endl;
+//    Json::Value root;
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(db, "SELECT mode, atime, current_version, size, nlink, type FROM file_system WHERE path = ?", -1, &stmt, 0);
     sqlite3_bind_text(stmt, 1, name, -1, SQLITE_STATIC);
     int res = sqlite3_step(stmt);
     if (res == SQLITE_ROW)
     {
+        root["issucess"] = 1;
         int type = sqlite3_column_int(stmt, 5);
         if (type == DIRECTORY)
         {
@@ -37,7 +37,8 @@ int server_getattribute(char * name, int jsonfile) {
         Json::StyledWriter sw;
         ofstream os;
         char jsondir[100];
-        strcpy(jsondir, name);
+        strcpy(jsondir,"/tmp/ndnfsjson");
+        strcat(jsondir, name);
         strcat(jsondir, "_attr.json");
         os.open(jsondir);
         os <<sw.write(root);
@@ -47,6 +48,7 @@ int server_getattribute(char * name, int jsonfile) {
     }
     else
     {
+        root["issucess"] = 0;
         sqlite3_finalize(stmt);
         FILE_LOG(LOG_ERROR) << "ndnfs_getattr: get_attr failed. path:" << name << ". Errno " << errno << endl;
         return -errno;

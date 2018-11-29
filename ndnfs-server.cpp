@@ -25,6 +25,8 @@ orders getOrder(string order) {
         o = SEND;
     else if (strcmp(order.c_str(), "getattr") == 0)
         o = GETATTR;
+    else if(strcmp(order.c_str(), "open") == 0)
+        o = OPEN;
     return o;
 }
 
@@ -76,6 +78,9 @@ int main(int argc, char const *argv[]) {
                 FILE_LOG(LOG_DEBUG) << buffer << endl;
                 send(new_socket, hello, strlen(hello), 0);
                 break;
+            }
+            case OPEN: {
+                open_to_json(v);
             }
             default:
                 break;

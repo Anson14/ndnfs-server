@@ -3,7 +3,7 @@ project(ndnfs_server)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(SOURCE_FILES ndnfs-server.cpp filehandle.cpp connect.cpp)
+set(SOURCE_FILES ndnfs-server.cpp filehandle.cpp connect.cpp filesegment.h filesegment.cpp)
 
 add_executable(ndnfs_server ${SOURCE_FILES})
 

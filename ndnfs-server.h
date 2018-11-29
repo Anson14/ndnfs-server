@@ -7,6 +7,7 @@
 
 #include "bits/stdc++.h"
 #include "connect.h"
+#include "filesegment.h"
 #include "filehandle.h"
 #include "bits/stdc++.h"
 #include "logger.h"
@@ -48,7 +49,7 @@ namespace ndnfs {
 }
 
 enum orders{
-    QUIT, SEND, DEFAULT, GETATTR
+    QUIT, SEND, DEFAULT, GETATTR, OPEN
 };
 
 orders getOrder(std::string order);

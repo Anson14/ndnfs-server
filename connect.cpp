@@ -48,16 +48,33 @@ int init_socket(struct sockaddr_in &address, int backlog) {
     return server_fd;
 }
 
+void senderror(Json::Value error) {
+    Json::StyledWriter sw;
+    string error_json = sw.write(error);
+    send(new_socket, error_json.c_str(), error_json.length(), 0);
+}
+
 int attr_to_json(vector<string> v) {
     Json::Value info;
-    Json::StyledWriter sw;
     if (v.size() == 2) {
-        server_getattribute((char *) v[1].c_str(), info);
+        Json::StyledWriter sw;
+        server_getattribute(v[1].c_str(), info);
         // Get attr sucess
-        string attr_json = sw.write(info);
-        send(new_socket, attr_json.c_str(), attr_json.size(), 0);
+        string json_attr = sw.write(info);
+        send(new_socket, json_attr.c_str(), json_attr.size(), 0);
     } else {
-        string error_json = sw.write(info);
-        send(new_socket, error_json.c_str(), error_json.length(), 0);
+        senderror(info);
+    }
+}
+
+int open_to_json(std::vector<std::string> v) {
+    Json::Value root;
+    if(v.size() ==3) {
+        Json::StyledWriter sw;
+        server_open(v[1].c_str(), v[2].c_str(), root);
+        string json_open = sw.write(root);
+        send(new_socket, json_open.c_str(), json_open.size(), 0);
+    } else {
+        senderror(root);
     }
 }

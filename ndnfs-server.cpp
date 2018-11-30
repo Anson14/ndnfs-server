@@ -27,6 +27,8 @@ orders getOrder(string order) {
         o = GETATTR;
     else if(strcmp(order.c_str(), "open") == 0)
         o = OPEN;
+    else if(strcmp(order.c_str(), "read") == 0)
+        o = READ;
     return o;
 }
 
@@ -81,6 +83,11 @@ int main(int argc, char const *argv[]) {
             }
             case OPEN: {
                 open_to_json(v);
+                break;
+            }
+            case READ: {
+                read_to_json(v);
+                break;
             }
             default:
                 break;

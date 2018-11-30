@@ -49,7 +49,7 @@ namespace ndnfs {
 }
 
 enum orders{
-    QUIT, SEND, DEFAULT, GETATTR, OPEN
+    QUIT, SEND, DEFAULT, GETATTR, OPEN, READ
 };
 
 orders getOrder(std::string order);

@@ -78,3 +78,15 @@ int open_to_json(std::vector<std::string> v) {
         senderror(root);
     }
 }
+
+int read_to_json(std::vector<std::string> v) {
+    Json::Value root;
+    if (v.size() == 4) {
+        Json::StyledWriter sw;
+        server_read(v[1].c_str(), stoi(v[2]), stoi(v[3]), root);
+        string json_read = sw.write(root);
+        send(new_socket, json_read.c_str(), json_read.size(), 0);
+    } else {
+        senderror(root);
+    }
+}

@@ -28,5 +28,7 @@ int open_to_json(std::vector<std::string> v);
 
 int read_to_json(std::vector<std::string> v);
 
+int write_to_json(std::vector<std::string> v);
+
 
 #endif //NDNFS_SERVER_CONNECT_H

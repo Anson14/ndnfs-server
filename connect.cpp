@@ -90,3 +90,18 @@ int read_to_json(std::vector<std::string> v) {
         senderror(root);
     }
 }
+
+int write_to_json(vector<string> v) {
+    Json::Value root;
+    if(v.size() == 4) {
+        Json::StyledWriter sw;
+        char buffer[stoi(v[3])];
+        memset(buffer, '\0', sizeof buffer);
+        read(new_socket, buffer, sizeof buffer);
+        server_write(v[1].c_str(), buffer, stoi(v[2]), stoi(v[3]), root);
+        string json_write = sw.write(root);
+        send(new_socket, json_write.c_str(), json_write.size(), 0);
+    } else {
+        senderror(root);
+    }
+}

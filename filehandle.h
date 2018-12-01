@@ -17,4 +17,6 @@ int server_open(const char*name,const char *mode, Json::Value &root);
 
 int server_read(const char *path, size_t size, off_t offset, Json::Value & root);
 
+int server_write(const char *path, const char *buf, size_t size, off_t offset, Json::Value &root);
+
 #endif //NDNFS_SERVER_FILEHANDLE_H

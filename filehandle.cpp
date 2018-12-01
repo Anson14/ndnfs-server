@@ -113,6 +113,7 @@ int server_read(const char *path, size_t size, off_t offset, Json::Value & root)
     // Read from  db now
     // test bt Anson at 2018.11.20
     char buf[size];
+    memset(buf, '\0', sizeof buf);
     int seg_size = ndnfs::seg_size;
     int seg = offset / seg_size;
     int len = 0;
@@ -126,12 +127,15 @@ int server_read(const char *path, size_t size, off_t offset, Json::Value & root)
     res = sqlite3_step(stmt);
     if (res == SQLITE_ROW) {
         int content_size = sqlite3_column_bytes(stmt, 0);
-        char *content[seg_size];
+        char content[seg_size];
+        memset(content, '\0', sizeof content);
         memmove(content, (char *) sqlite3_column_blob(stmt, 0), content_size);
         int content_offset = offset - seg * seg_size;
-        len += content_size - content_offset;
-        memmove(buf, content + content_offset, len);
-        // FILE_LOG(LOG_DEBUG)<< "content:"<< content_size<< endl;
+        len += min(content_size - content_offset, (int) size);
+        memset(buf, '\0', sizeof buf);
+        strncpy(buf, content + content_offset, len);
+        buf[len] = '\0';
+//         FILE_LOG(LOG_DEBUG)<< "buf:"<< buf<< endl;
         sqlite3_finalize(stmt);
         if (content_size < seg_size) {
             // means this segment is the last segment
@@ -180,4 +184,27 @@ int server_read(const char *path, size_t size, off_t offset, Json::Value & root)
             }
         }
     }
+}
+
+int server_write(const char *path, const char *buf, size_t size, off_t offset, Json::Value &root) {
+    FILE_LOG(LOG_DEBUG) << "server_write: path=" << path << std::dec << ", size=" << size << ", offset=" << offset << endl;
+
+    // First check if the entry exists in the database
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(db, "SELECT current_version FROM file_system WHERE path = ?;", -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
+    int res = sqlite3_step(stmt);
+    if (res != SQLITE_ROW)
+    {
+        root["issucess"] = 0;
+        root["size"] = 0;
+        sqlite3_finalize(stmt);
+        return -ENOENT;
+    }
+
+    sqlite3_finalize(stmt);
+    addtemp_segment(path, buf, size, offset);
+    root["issucess"] = 1;
+    root["size"] = (int)size;
+    return size;
 }

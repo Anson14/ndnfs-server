@@ -29,6 +29,9 @@ orders getOrder(string order) {
         o = OPEN;
     else if(strcmp(order.c_str(), "read") == 0)
         o = READ;
+    else if(strcmp(order.c_str(), "write") == 0) {
+        o = WRITE;
+    }
     return o;
 }
 
@@ -88,6 +91,9 @@ int main(int argc, char const *argv[]) {
             case READ: {
                 read_to_json(v);
                 break;
+            }
+            case WRITE: {
+                write_to_json(v);
             }
             default:
                 break;

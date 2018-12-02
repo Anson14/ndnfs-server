@@ -69,7 +69,7 @@ int attr_to_json(vector<string> v) {
 
 int open_to_json(std::vector<std::string> v) {
     Json::Value root;
-    if(v.size() ==3) {
+    if (v.size() == 3) {
         Json::StyledWriter sw;
         server_open(v[1].c_str(), v[2].c_str(), root);
         string json_open = sw.write(root);
@@ -93,14 +93,28 @@ int read_to_json(std::vector<std::string> v) {
 
 int write_to_json(vector<string> v) {
     Json::Value root;
-    if(v.size() == 4) {
+    if (v.size() == 4) {
         Json::StyledWriter sw;
-        char buffer[stoi(v[3])];
+        char buffer[stoi(v[2]) +1];
         memset(buffer, '\0', sizeof buffer);
         read(new_socket, buffer, sizeof buffer);
         server_write(v[1].c_str(), buffer, stoi(v[2]), stoi(v[3]), root);
         string json_write = sw.write(root);
         send(new_socket, json_write.c_str(), json_write.size(), 0);
+    } else {
+        senderror(root);
+    }
+}
+
+int release_to_json(std::vector<std::string> v) {
+    Json::Value root;
+    if (v.size() == 2) {
+        Json::StyledWriter sw;
+        FILE_LOG(LOG_DEBUG)<< "v:"<<v[1]<< endl;
+        server_release(v[1].c_str(), root);
+        FILE_LOG(LOG_DEBUG)<< "It's OK"<< endl;
+        string json_release = sw.write(root);
+        send(new_socket, json_release.c_str(), json_release.size(), 0);
     } else {
         senderror(root);
     }

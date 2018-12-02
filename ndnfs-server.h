@@ -26,6 +26,12 @@
 #include <time.h>
 #include <sys/time.h>
 #include <utime.h>
+#include <ndn-cpp/security/key-chain.hpp>
+#include <ndn-cpp/security/identity/memory-identity-storage.hpp>
+#include <ndn-cpp/security/identity/memory-private-key-storage.hpp>
+#include <ndn-cpp/security/policy/no-verify-policy-manager.hpp>
+#include <ndn-cpp/name.hpp>
+
 
 #include <pthread.h>
 
@@ -33,8 +39,8 @@ extern const char *db_name;
 extern sqlite3 *db;
 extern int new_socket;
 namespace ndnfs {
-//    extern ndn::Name certificateName;
-//    extern ndn::ptr_lib::shared_ptr<ndn::KeyChain> keyChain;
+    extern ndn::Name certificateName;
+    extern ndn::ptr_lib::shared_ptr<ndn::KeyChain> keyChain;
     extern std::string global_prefix;
     extern std::string root_path;
     extern std::string logging_path;
@@ -49,11 +55,12 @@ namespace ndnfs {
 }
 
 enum orders{
-    QUIT, SEND, DEFAULT, GETATTR, OPEN, READ, WRITE
+    QUIT, SEND, DEFAULT, GETATTR, OPEN, READ, WRITE, RELEASE
 };
 
 orders getOrder(std::string order);
 
+// TODO: It can only split one space,it should support be more flexible
 inline void SplitString(const std::string& s, std::vector<std::string>& v, const std::string& c)
 {
     std::string::size_type pos1, pos2;

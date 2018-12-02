@@ -19,4 +19,8 @@ int server_read(const char *path, size_t size, off_t offset, Json::Value & root)
 
 int server_write(const char *path, const char *buf, size_t size, off_t offset, Json::Value &root);
 
+int server_release(const char* path, Json::Value & root);
+
+int ndnfs_updateattr(const char *path, int ver);
+
 #endif //NDNFS_SERVER_FILEHANDLE_H

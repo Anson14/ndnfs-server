@@ -3,11 +3,11 @@ project(ndnfs_server)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(SOURCE_FILES ndnfs-server.cpp filehandle.cpp connect.cpp filesegment.h filesegment.cpp)
+set(SOURCE_FILES ndnfs-server.cpp filehandle.cpp connect.cpp filesegment.h filesegment.cpp signature-states.h)
 
 add_executable(ndnfs_server ${SOURCE_FILES})
 
 include_directories(/usr/include)
 link_directories(/usr/lib)
 
-target_link_libraries(ndnfs_server sqlite3 jsoncpp)
+target_link_libraries(ndnfs_server sqlite3 jsoncpp ndn-cpp)

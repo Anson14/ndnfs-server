@@ -1,0 +1,10 @@
+//
+// Created by anson on 18-12-2.
+//
+
+#ifndef NDNFS_SERVER_SIGNATURE_STATES_H
+#define NDNFS_SERVER_SIGNATURE_STATES_H
+
+enum SignatureState {READY, NOT_READY, READY_OLD};
+
+#endif //NDNFS_SERVER_SIGNATURE_STATES_H

@@ -3,7 +3,7 @@ project(ndnfs_server)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(SOURCE_FILES ndnfs-server.cpp filehandle.cpp connect.cpp filesegment.h filesegment.cpp signature-states.h)
+set(SOURCE_FILES ndnfs-server.cpp filehandle.cpp connect.cpp filesegment.h filesegment.cpp signature-states.h directory.h directory.cpp mime-inference.cpp)
 
 add_executable(ndnfs_server ${SOURCE_FILES})
 

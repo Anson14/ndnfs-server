@@ -134,6 +134,16 @@ orders getOrder(string order) {
         o = WRITE;
     else if (strcmp(order.c_str(), "release") == 0)
         o = RELEASE;
+    else if(strcmp(order.c_str(), "mknod") == 0)
+        o = MKNOD;
+    else if(strcmp(order.c_str(), "rm") == 0)
+        o = RM;
+    else if(strcmp(order.c_str(), "mkdir") == 0)
+        o = MKDIR;
+    else if(strcmp(order.c_str(), "readdir") == 0)
+        o = READDIR;
+    else if(strcmp(order.c_str(), "rmdir") == 0)
+        o = RMDIR;
     return o;
 }
 
@@ -176,6 +186,9 @@ int main(int argc, char const *argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    // start mime map
+    initialize_ext_mime_map();
+
     char buffer[1024];
     const char *hello = "Hello from server";
 //    valread = (int) read(new_socket, buffer, 1024);
@@ -216,6 +229,26 @@ int main(int argc, char const *argv[]) {
             }
             case RELEASE: {
                 release_to_json(v);
+                break;
+            }
+            case MKNOD: {
+                mknod_to_json(v);
+                break;
+            }
+            case RM: {
+                rm_to_json(v);
+                break;
+            }
+            case READDIR: {
+                readdir_to_json(v);
+                break;
+            }
+            case MKDIR: {
+                mkdir_to_json(v);
+                break;
+            }
+            case RMDIR: {
+                rmdir_to_json(v);
                 break;
             }
             default:

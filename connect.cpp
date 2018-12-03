@@ -110,11 +110,69 @@ int release_to_json(std::vector<std::string> v) {
     Json::Value root;
     if (v.size() == 2) {
         Json::StyledWriter sw;
-        FILE_LOG(LOG_DEBUG)<< "v:"<<v[1]<< endl;
         server_release(v[1].c_str(), root);
-        FILE_LOG(LOG_DEBUG)<< "It's OK"<< endl;
         string json_release = sw.write(root);
         send(new_socket, json_release.c_str(), json_release.size(), 0);
+    } else {
+        senderror(root);
+    }
+}
+
+int mknod_to_json(std::vector<std::string> v) {
+    Json::Value root;
+    if (v.size() == 2) {
+        Json::StyledWriter sw;
+        server_mknod(v[1].c_str(), root);
+        string json_mknod = sw.write(root);
+        send(new_socket, json_mknod.c_str(), json_mknod.size(), 0);
+    } else {
+        senderror(root);
+    }
+}
+
+int rm_to_json(std::vector<std::string> v) {
+    Json::Value root;
+    if (v.size() == 2) {
+        Json::StyledWriter sw;
+        server_rm(v[1].c_str(), root);
+        string json_rm = sw.write(root);
+        send(new_socket, json_rm.c_str(), json_rm.size(), 0);
+    } else {
+        senderror(root);
+    }
+}
+
+int readdir_to_json(std::vector<std::string> v) {
+    Json::Value root;
+    if (v.size() == 2) {
+        Json::StyledWriter sw;
+        server_readdir(v[1].c_str(), root);
+        string json_readdir = sw.write(root);
+        send(new_socket, json_readdir.c_str(), json_readdir.size(), 0);
+    } else {
+        senderror(root);
+    }
+}
+
+int mkdir_to_json(std::vector<std::string> v) {
+    Json::Value root;
+    if (v.size() == 2) {
+        Json::StyledWriter sw;
+        server_mkdir(v[1].c_str(), root);
+        string json_readdir = sw.write(root);
+        send(new_socket, json_readdir.c_str(), json_readdir.size(), 0);
+    } else {
+        senderror(root);
+    }
+}
+
+int rmdir_to_json(std::vector<std::string> v) {
+    Json::Value root;
+    if (v.size() == 2) {
+        Json::StyledWriter sw;
+        server_rmdir(v[1].c_str(), root);
+        string json_rmdir = sw.write(root);
+        send(new_socket, json_rmdir.c_str(), json_rmdir.size(), 0);
     } else {
         senderror(root);
     }

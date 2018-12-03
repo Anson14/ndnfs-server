@@ -32,4 +32,14 @@ int write_to_json(std::vector<std::string> v);
 
 int release_to_json(std::vector<std::string> v);
 
+int mknod_to_json(std::vector<std::string> v);
+
+int rm_to_json(std::vector<std::string> v);
+
+int readdir_to_json(std::vector<std::string> v);
+
+int mkdir_to_json(std::vector<std::string> v);
+
+int rmdir_to_json(std::vector<std::string> v);
+
 #endif //NDNFS_SERVER_CONNECT_H

@@ -9,6 +9,8 @@
 #include "connect.h"
 #include "filesegment.h"
 #include "filehandle.h"
+#include "directory.h"
+
 #include "bits/stdc++.h"
 #include "logger.h"
 #include <errno.h>
@@ -55,7 +57,7 @@ namespace ndnfs {
 }
 
 enum orders{
-    QUIT, SEND, DEFAULT, GETATTR, OPEN, READ, WRITE, RELEASE
+    QUIT, SEND, DEFAULT, GETATTR, OPEN, READ, WRITE, RELEASE,  MKNOD, RM, MKDIR, RMDIR, READDIR
 };
 
 orders getOrder(std::string order);
@@ -77,6 +79,19 @@ inline void SplitString(const std::string& s, std::vector<std::string>& v, const
         v.push_back(s.substr(pos1));
 }
 
+inline int split_last_component(const std::string &path, std::string &prefix, std::string &name)
+{
+    size_t last_comp_pos = path.rfind('/');
+    if (last_comp_pos == std::string::npos)
+        return -1;
+
+    prefix = path.substr(0, last_comp_pos);
+    if (prefix.empty())
+        prefix = "/";
+    name = path.substr(last_comp_pos + 1);
+
+    return 0;
+}
 
 
 #endif //NDNFS_SERVER_NDNFS_SERVER_H

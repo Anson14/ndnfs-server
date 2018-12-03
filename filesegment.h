@@ -31,4 +31,6 @@ int sign_segment(const char *path, int ver, int seg, const char *data, int len);
 
 int removenosign_segment(const char* path);
 
+void remove_file_entry(const char* path);
+
 #endif //NDNFS_SERVER_FILESEGMENT_H

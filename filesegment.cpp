@@ -299,3 +299,19 @@ int removenosign_segment(const char *path) {
     sqlite3_finalize(stmt);
     return 0;
 }
+
+void remove_file_entry(const char *path) {
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(db, "DELETE FROM file_segments WHERE path = ?;", -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
+    int res = sqlite3_step(stmt);
+//    if (res == SQLITE_OK)
+//        FILE_LOG(LOG_DEBUG)<<"DELETE FS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+    sqlite3_finalize(stmt);
+
+
+    sqlite3_prepare_v2(db, "DELETE FROM file_versions WHERE path = ?;", -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+}

@@ -251,7 +251,7 @@ int server_release(const char *path, Json::Value &root) {
         return -ENOENT;
     }
     latest_version = sqlite3_column_int(stmt, 0);
-    latest_version+=1;
+    latest_version += 1;
     sqlite3_finalize(stmt);
 
 //    if ((fi->flags & O_ACCMODE) != O_RDONLY) {
@@ -317,5 +317,148 @@ int server_release(const char *path, Json::Value &root) {
     sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
     res = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    return 0;
+}
+
+int server_mknod(const char *path, Json::Value &root) {
+    FILE_LOG(LOG_DEBUG) << "server_mknod: path=" << path << endl;
+    mode_t mode = 33188;
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(db, "SELECT * FROM file_system WHERE path = ?;", -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
+    int res = sqlite3_step(stmt);
+    if (res == SQLITE_ROW) {
+        // Cannot create file that has conflicting file name
+        root["issucess"] = 0;
+        sqlite3_finalize(stmt);
+        return -ENOENT;
+    }
+
+    sqlite3_finalize(stmt);
+
+    // We cannot create file without creating necessary folders in advance
+    // Get father dir's level
+    int level = 0;
+    string path_father;
+    string name;
+    split_last_component(path, path_father, name);
+    sqlite3_prepare_v2(db, "SELECT level FROM file_system WHERE path = ?;", -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, path_father.c_str(), -1, SQLITE_STATIC);
+    res = sqlite3_step(stmt);
+    if (res != SQLITE_ROW) {
+        root["issucess"] = 0;
+        sqlite3_finalize(stmt);
+        return -ENOENT;
+    }
+    level = sqlite3_column_int(stmt, 0);
+    level += 1;
+
+    sqlite3_finalize(stmt);
+    // Infer the mime_type of the file based on extension
+    char mime_type[100] = "";
+    mime_infer(mime_type, path); // Get Type of New File
+
+    // Generate first version entry for the new file
+    int ver = time(0);
+
+    sqlite3_prepare_v2(db, "INSERT INTO file_versions (path, version) VALUES (?, ?);", -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 2, ver);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    // Add the file entry to database
+    sqlite3_prepare_v2(db,
+                       "INSERT INTO file_system (path, current_version, mime_type, ready_signed, type, mode, atime, nlink, size, level) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);",
+                       -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 2, ver);                           // current version
+    sqlite3_bind_text(stmt, 3, mime_type, -1, SQLITE_STATIC); // mime_type based on ext
+
+    enum SignatureState signatureState = NOT_READY;
+    sqlite3_bind_int(stmt, 4, signatureState);
+
+    enum FileType fileType = REGULAR;
+
+    switch (S_IFMT & mode) {
+        case S_IFDIR:
+            // expect this to call mkdir instead
+            break;
+        case S_IFCHR:
+            fileType = CHARACTER_SPECIAL;
+            break;
+        case S_IFREG:
+            fileType = REGULAR;
+            break;
+        case S_IFLNK:
+            fileType = SYMBOLIC_LINK;
+            break;
+        case S_IFSOCK:
+            fileType = UNIX_SOCKET;
+            break;
+        case S_IFIFO:
+            fileType = FIFO_SPECIAL;
+            break;
+        default:
+            fileType = REGULAR;
+            break;
+    }
+    sqlite3_bind_int(stmt, 5, fileType);
+    sqlite3_bind_int(stmt, 6, mode);
+    sqlite3_bind_int(stmt, 7, ver);
+    // sqlite3_bind_int(stmt, 8, ver);
+    sqlite3_bind_int(stmt, 8, 0);
+    sqlite3_bind_int(stmt, 9, 0);
+    sqlite3_bind_int(stmt, 10, level);
+
+    res = sqlite3_step(stmt);
+    // FILE_LOG(LOG_DEBUG) << " Insert into file_system error! fileType= " << mime_type << " ??" << endl;
+    // sqlite3_finalize(stmt);
+    sqlite3_finalize(stmt);
+    root["issucess"] = 1;
+    return 0;
+}
+
+int server_rm(const char *path, Json::Value &root) {
+    FILE_LOG(LOG_DEBUG) << "server_rm: path=" << path << endl;
+    sqlite3_stmt *stmt;
+
+    // check if any user is using this file
+    sqlite3_prepare_v2(db, "SELECT nlink, type from file_system WHERE path = ?;", -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
+    int res = sqlite3_step(stmt);
+    if (res != SQLITE_ROW) {
+        root["issucess"] = 0;
+        FILE_LOG(LOG_ERROR) << "remove error, no such file!" << endl;
+        sqlite3_finalize(stmt);
+        return -errno;
+    }
+    int nlink = sqlite3_column_int(stmt, 0);
+    int type = sqlite3_column_int(stmt, 1);
+    root["link"] = nlink;
+    if (nlink != 0) {
+        root["issucess"] = 0;
+        FILE_LOG(LOG_ERROR) << "remove error, " << nlink << " users are using this file" << endl;
+        return -errno;
+    }
+    if (type == 8) {
+        root["issucess"] = 0;
+        root["isdir"] = 1;
+        FILE_LOG(LOG_ERROR) << "remove error, this is a dir" << endl;
+        return -errno;
+    }
+    root["isdir"] = 0;
+    sqlite3_finalize(stmt);
+
+    // TODO: update remove_versions
+    remove_file_entry(path);
+
+    // Then, remove file entry
+    sqlite3_prepare_v2(db, "DELETE FROM file_system WHERE path = ?;", -1, &stmt, 0);
+    sqlite3_bind_text(stmt, 1, path, -1, SQLITE_STATIC);
+    sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+
+    root["issucess"] = 1;
     return 0;
 }
